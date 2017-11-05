@@ -7,7 +7,7 @@
 int esPrimo(int num){
   if ((num == 1) || (num == -1)) return 0;
   int i, primo = 0;
-  for(i = 2; i<=num/2; i++)
+  for(i = 2; i<=num; i++)
     if (num % i == 0) primo++;
   if(primo == 1) return 1;
   return 0;
@@ -44,6 +44,23 @@ void leeArchivo(FILE *A, int proceso, int cantidadDeLineas){
   }
   fclose(salida);
 }
+typedef struct dato{
+  int n,m, i;
+  FILE *entrada;
+}parametros;
+
+void *leeArchivoHilos(void *args ){
+  parametros *par = (parametros *) args;
+  int m = par->m, n = par-> n, i = par->i;
+  FILE *archivoEntrada = par->entrada;
+  printf("i: %d\n",i);
+    if (i != n-1) {leeArchivo(archivoEntrada, i+1, m/n);
+      printf ("%i\n",m/n);
+    }
+    else {leeArchivo(archivoEntrada, i+1 , (m/n) + (m%n));
+      printf("%i\n", (m/n) + (m%n));
+    }
+}
 
 int main(int argc, char const *argv[]) {
   if ((!argv[2]) || ( (strcmp(argv[2],"-p") != 0) && (strcmp(argv[2],"-h")) )){
@@ -71,13 +88,31 @@ int main(int argc, char const *argv[]) {
   }
   FILE *archivoEntrada = fopen(argv[1], "r");
   int m = cantidadDeNumeros(archivoEntrada);
-  for (int i = 0; i<n; i++){
-    if (strcmp(argv[2],"-p") == 0){
+  if (strcmp(argv[2],"-p") == 0){
+    for (int i = 0; i<n; i++){
       int pid = fork();
       if (pid == 0) break;
     //  printf("i: %i   Proceso: %d\n", i, pid);
       if (i != n-1) {leeArchivo(archivoEntrada, i+1, m/n); printf ("%i\n",m/n);}
       else {leeArchivo(archivoEntrada, i+1 , (m/n) + (m%n)); printf("%i\n", (m/n) + (m%n));}
+    }
+  }
+  else {
+    parametros pHilos;
+    pHilos.m = m;
+    pHilos.n = n;
+    pHilos.entrada = archivoEntrada;
+    pthread_t tid[n];
+    pthread_mutex_t mutex = tid;
+    for(int i= 0; i<n; i++){
+        pHilos.i = i;
+        printf("i main: %d\n", pHilos.i);
+        pthread_create(&tid[i],NULL,leeArchivoHilos, (void *)&pHilos);
+        pthread_mutex_lock(&mutex);
+        //pthread_mutex_unlock(&mutex);
+    }
+    for(int i = 0; i<n; i++){
+      pthread_join(tid[i], NULL);
     }
   }
   fclose(archivoEntrada);
