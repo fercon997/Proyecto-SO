@@ -62,7 +62,16 @@ void *leeArchivoHilos(void *args ){
     }
 }
 
+void *prueba(void *args){
+  int i = *((int*)args);
+  printf("Hola. Hilo %d\n",i );
+}
+
 int main(int argc, char const *argv[]) {
+  if (!argv[1]){
+    printf("Debe especificar el nombre del archivo despues del programa\n");
+    return 0;
+  }
   if ((!argv[2]) || ( (strcmp(argv[2],"-p") != 0) && (strcmp(argv[2],"-h")) )){
      printf("Debe especificar si quiere ejecura el programa con hilos o procesos.\n");
      printf("Utilice -p o -h\n");
@@ -98,15 +107,17 @@ int main(int argc, char const *argv[]) {
     }
   }
   else {
-    parametros pHilos;
-    pHilos.m = m;
-    pHilos.n = n;
-    pHilos.entrada = archivoEntrada;
+    parametros pHilos[n];
     pthread_t tid[n];
+    int aux[n];
     for(int i= 0; i<n; i++){
-        pHilos.i = i;
-        printf("i main: %d\n", pHilos.i);
-        pthread_create(&tid[i],NULL,leeArchivoHilos, (void *)&pHilos);
+        pHilos[i].m = m;
+        pHilos[i].n = n;
+        pHilos[i].entrada = archivoEntrada;
+        pHilos[i].i = i;
+        aux[i] = i;
+        printf("i main: %d\n", i);
+        pthread_create(&tid[i],NULL,leeArchivoHilos,&pHilos[i]);
     }
     for(int i = 0; i<n; i++){
       pthread_join(tid[i], NULL);
