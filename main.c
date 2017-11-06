@@ -7,9 +7,9 @@
 int esPrimo(int num){
   if ((num == 1) || (num == -1)) return 0;
   int i, primo = 0;
-  for(i = 2; i<=num; i++)
-    if (num % i == 0) primo++;
-  if(primo == 1) return 1;
+  for(i = 2; i<=num/2; i++)
+    if (num % i == 0) return 0;
+    return 1;
   return 0;
 }
 
@@ -103,13 +103,10 @@ int main(int argc, char const *argv[]) {
     pHilos.n = n;
     pHilos.entrada = archivoEntrada;
     pthread_t tid[n];
-    pthread_mutex_t mutex = tid;
     for(int i= 0; i<n; i++){
         pHilos.i = i;
         printf("i main: %d\n", pHilos.i);
         pthread_create(&tid[i],NULL,leeArchivoHilos, (void *)&pHilos);
-        pthread_mutex_lock(&mutex);
-        //pthread_mutex_unlock(&mutex);
     }
     for(int i = 0; i<n; i++){
       pthread_join(tid[i], NULL);
