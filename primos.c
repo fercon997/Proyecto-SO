@@ -3,6 +3,10 @@
 #include <pthread.h>
 #include <unistd.h>
 #include <string.h>
+#include  <sys/types.h>
+
+
+#define   BUF_SIZE   100
 
 int esPrimo(int num){
   if ((num == 1) || (num == -1)) return 0;
@@ -53,7 +57,7 @@ void *leeArchivoHilos(void *args ){
   parametros *par = (parametros *) args;
   int m = par->m, n = par-> n, i = par->i;
   FILE *archivoEntrada = par->entrada;
-  printf("i: %d\n",i);
+  //printf("i: %d\n",i);
     if (i != n-1) {leeArchivo(archivoEntrada, i+1, m/n);
       printf ("%i\n",m/n);
     }
@@ -96,11 +100,14 @@ int main(int argc, char const *argv[]) {
     return 0;
   }
   FILE *archivoEntrada = fopen(argv[1], "r");
+  int status;
+  char buf[BUF_SIZE];
   int m = cantidadDeNumeros(archivoEntrada);
   if (strcmp(argv[2],"-p") == 0){
     for (int i = 0; i<n; i++){
       int pid = fork();
       if (pid == 0) break;
+      if (pid < 0) exit(1);
     //  printf("i: %i   Proceso: %d\n", i, pid);
       if (i != n-1) {leeArchivo(archivoEntrada, i+1, m/n); printf ("%i\n",m/n);}
       else {leeArchivo(archivoEntrada, i+1 , (m/n) + (m%n)); printf("%i\n", (m/n) + (m%n));}
@@ -109,14 +116,11 @@ int main(int argc, char const *argv[]) {
   else {
     parametros pHilos[n];
     pthread_t tid[n];
-    int aux[n];
     for(int i= 0; i<n; i++){
         pHilos[i].m = m;
         pHilos[i].n = n;
         pHilos[i].entrada = archivoEntrada;
         pHilos[i].i = i;
-        aux[i] = i;
-        printf("i main: %d\n", i);
         pthread_create(&tid[i],NULL,leeArchivoHilos,&pHilos[i]);
     }
     for(int i = 0; i<n; i++){
