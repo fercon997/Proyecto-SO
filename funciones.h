@@ -32,7 +32,7 @@ typedef struct dato{
 
 
 int validarEntrada(const char *argv[]) {
-  if (!argv[1]){
+  if ((!argv[1]) || (strcmp(argv[1], "entrada.txt") != 0)){
     printf("Debe especificar el nombre del archivo de entrada despues del programa\n");
     return 0;
   }
@@ -63,7 +63,7 @@ int validarEntrada(const char *argv[]) {
 }
 
 int validarEntradaN(const char *argv[]) {
-  if (!argv[1]){
+  if ((!argv[1]) || !(strcmp(argv[1], "entrada.txt") != 0)){
     printf("Debe especificar el nombre del archivo de entrada despues del programa\n");
     return 0;
   }
