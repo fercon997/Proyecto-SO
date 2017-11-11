@@ -56,7 +56,33 @@ int validarEntrada(const char *argv[]) {
   }
   int n = atoi(argv[4]);
   printf("n: %i\n", n);
-  if ((n<1) || (n>10)){
+  if ((n < 1) || (n > 10)){
+    printf("No puede haber menos de un proceso ni mas de 10\n");
+    return 0;
+  }
+}
+
+int validarEntradaN(const char *argv[]) {
+  if (!argv[1]){
+    printf("Debe especificar el nombre del archivo de entrada despues del programa\n");
+    return 0;
+  }
+  char const *str = argv[2];
+  if ((!str) || (strcmp(str,"-n") != 0)) {
+    printf("Debe indicar el numero de hilos a ejecutar. Maximo 10.\n");
+    printf("Ejemplo: -n 5\n");
+    // printf("%s\n",str);
+    // printf("%d\n", strcmp("-n",str));
+    return 0;
+  }
+  if(!argv[3]) {
+    printf("Debe indicar el numero de procesos o hilos a ejecutar. Maximo 10.\n");
+    printf("Ejemplo: -n 5\n");
+    return 0;
+  }
+  int n = atoi(argv[3]);
+  printf("n: %i\n", n);
+  if ((n < 1) || (n > 10)){
     printf("No puede haber menos de un proceso ni mas de 10\n");
     return 0;
   }
@@ -64,7 +90,7 @@ int validarEntrada(const char *argv[]) {
 
 int lineasProcesar(int i, int m, int n, char str[10]){
   if (i != n-1) {
-    printf ("Lineas %s #%i: %i\n",str, i, m/n);
+    printf ("Lineas %s #%i: %i\n", str, i, m/n);
     return m/n;
   }
   else {

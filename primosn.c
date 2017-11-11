@@ -7,6 +7,7 @@
 #include "archivos.h"
 
 int main(int argc, char const *argv[]) {
+  if (validarEntradaN(argv) == 0) return 0;
   int n = atoi(argv[3]);
   FILE *archivoEntrada = fopen(argv[1], "r");
   int m = cantidadDeNumeros(archivoEntrada);

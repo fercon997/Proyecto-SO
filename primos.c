@@ -17,7 +17,7 @@ int main(int argc, char const *argv[]) {
   char buf[BUF_SIZE];
   int m = cantidadDeNumeros(archivoEntrada);
   int n = atoi(argv[4]);
-  if (strcmp(argv[2],"-p") == 0){
+  if (strcmp(argv[2],"-p") == 0) {
     for (int i = 0; i < n; i++) {
       int pid = fork();
       if (pid == 0) break;
@@ -33,14 +33,14 @@ int main(int argc, char const *argv[]) {
   else {
     parametros pHilos[n];
     pthread_t tid[n];
-    for(int i= 0; i<n; i++){
-        pHilos[i].m = m;
-        pHilos[i].n = n;
-        pHilos[i].entrada = archivoEntrada;
-        pHilos[i].i = i;
-        pthread_create(&tid[i], NULL, leeArchivoHilos, &pHilos[i]);
+    for(int i= 0; i < n; i++){
+      pHilos[i].m = m;
+      pHilos[i].n = n;
+      pHilos[i].entrada = archivoEntrada;
+      pHilos[i].i = i;
+      pthread_create(&tid[i], NULL, leeArchivoHilos, &pHilos[i]);
     }
-    for(int i = 0; i<n; i++){
+    for(int i = 0; i < n; i++){
       pthread_join(tid[i], NULL);
     }
   }
