@@ -34,10 +34,10 @@ int main(int argc, char const *argv[]) {
       return EXIT_FAILURE;
   }
       if (i != n-1) {leeArchivo(archivoEntrada, i+1, m/n);
-        printf ("%i\n",m/n);
+        printf ("%i lineas\n",m/n);
       }
       else {leeArchivo(archivoEntrada, i+1 , (m/n) + (m%n));
-        printf("%i\n", (m/n) + (m%n));
+        printf("%i lineas\n", (m/n) + (m%n));
       }
     }
   }

@@ -60,3 +60,14 @@ int validarEntrada(const char *argv[]){
     return 0;
   }
 }
+
+int lineasProcesar(int i, int m, int n){
+  if (i != n-1) {
+    printf ("Lineas hilo #%i: %i\n",i, m/n);
+    return m/n;
+  }
+  else {
+    printf("Lineas hilo #%i: %i\n", i, (m/n) + (m%n));
+    return (m/n) + (m%n);
+  }
+}

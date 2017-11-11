@@ -4,6 +4,7 @@
 #include <unistd.h>
 #include <string.h>
 #include "funciones.h"
+#include "archivos.h"
 
 int main(int argc, char const *argv[]) {
   int n = atoi(argv[3]);

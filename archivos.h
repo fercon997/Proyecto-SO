@@ -1,11 +1,11 @@
-// #include "funciones.h"
+
 
 void leeArchivo(FILE *A, int proceso, int cantidadDeLineas){
   char str[12];
   sprintf(str,"%d.txt", proceso);
   printf("%s\n", str);
   FILE *salida = fopen(str, "w");
-  int entrada = 12;
+  int entrada = 0;
   if (!A)
 		printf("\n\n          El archivo esta vacio!");
 	else{
@@ -23,20 +23,11 @@ void *leeArchivoHilos(void *args ){
   int m = par->m, n = par-> n, i = par->i;
   FILE *archivoEntrada = par->entrada;
   //printf("i: %d\n",i);
-    if (i != n-1) {leeArchivo(archivoEntrada, i+1, m/n);
-      printf ("%i\n",m/n);
-    }
-    else {leeArchivo(archivoEntrada, i+1 , (m/n) + (m%n));
-      printf("%i\n", (m/n) + (m%n));
-    }
+  leeArchivo(archivoEntrada, i+1, lineasProcesar(i,m,n));
 }
 
 void leeArchivoN(FILE *A, int proceso, int cantidadDeLineas , int *cont){
-  char str[12];
-  sprintf(str,"%d.txt", proceso);
-  printf("%s\n", str);
-  FILE *salida = fopen(str, "w");
-  int entrada = 12;
+  int entrada = 0;
   if (!A)
 		printf("\n\n          El archivo esta vacio!");
 	else{
@@ -48,7 +39,6 @@ void leeArchivoN(FILE *A, int proceso, int cantidadDeLineas , int *cont){
         //printf("Contador: %d\n", *cont );
       }
   }
-  fclose(salida);
 }
 
 void *leeArchivoHilosN(void *args ){
@@ -56,12 +46,7 @@ void *leeArchivoHilosN(void *args ){
   int m = par->m, n = par-> n, i = par->i, cont = 0;
   FILE *archivoEntrada = par->entrada;
   //printf("i: %d\n",i);
-    if (i != n-1) {leeArchivoN(archivoEntrada, i+1, m/n,&cont);
-      printf ("%i\n",m/n);
-    }
-    else {leeArchivoN(archivoEntrada, i+1 , (m/n) + (m%n),&cont);
-      printf("%i\n", (m/n) + (m%n));
-    }
-    printf("Numeros primos: %i\n", cont);
+    leeArchivoN(archivoEntrada, i+1, lineasProcesar(i,m,n),&cont);
+    printf("Numeros primos hilo #%i: %i\n", i, cont);
     par->cont = cont;
 }
