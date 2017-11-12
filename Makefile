@@ -4,13 +4,19 @@
 #	action
 
 #Este target va a compilar todos los archivos
-all:
+all: compilar
+
+compilar: 
 	gcc primos.c -o primos -l pthread
 	gcc primosn.c -o primosn -l pthread
+
+semaforo:
+	gcc semaforo.c -o semaforo
 
 clean:
 	rm -rf *o primos
 	rm -rf *o primosn
+	rm -rf *o semaforo
 	
 rmfiles:
 	rm -rf 1.txt
