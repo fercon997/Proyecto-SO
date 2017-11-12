@@ -11,6 +11,8 @@
 
 #define N 10
 
+//  http://www.csee.umbc.edu/~motteler/teaching/courses/operating_systems/os97a/notes/notes4.txt
+
 struct lista_de_procesos {
 	int pid;
 	struct lista_de_procesos *prox;
