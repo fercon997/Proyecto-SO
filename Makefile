@@ -9,9 +9,12 @@ all: compilar
 compilar: 
 	gcc primos.c -o primos -l pthread
 	gcc primosn.c -o primosn -l pthread
+	gcc semaforo.c -o semaforo -l pthread
 
 semaforo:
-	gcc semaforo.c -o semaforo
+	rm -f *o semaforo
+	gcc semaforo.c -o semaforo -l pthread
+	./semaforo
 
 clean:
 	rm -rf *o primos
