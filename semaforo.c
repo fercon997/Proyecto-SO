@@ -1,10 +1,10 @@
-#include <stdio.h>          /* printf()                 */
-#include <stdlib.h>         /* exit(), malloc(), free() */
-#include <sys/types.h>      /* key_t, sem_t, pid_t      */
-#include <sys/shm.h>        /* shmat(), IPC_RMID        */
-#include <errno.h>          /* errno, ECHILD            */
-#include <semaphore.h>      /* sem_open(), sem_destroy(), sem_wait().. */
-#include <fcntl.h>          /* O_CREAT, O_EXEC          */
+#include <stdio.h>          
+#include <stdlib.h>         
+#include <sys/types.h>      
+#include <sys/shm.h>        
+#include <errno.h>          
+#include <semaphore.h>      
+#include <fcntl.h>          
 #include <sys/wait.h>
 #include <unistd.h>
 
@@ -18,13 +18,50 @@ Semaforo *crear_semaforo(char name[], int value) {
 void down(Semaforo *sem, int i) {
 	int n = sem_wait(sem);
 	if (n != 0) perror("sem_wait failed");
-	printf ("  Child(%d) is in critical section.\n", i);
+	printf ("  Proceso#%d esperando.\n", i);
+  sleep (1);
+}
+
+void downMutex(Semaforo *sem, int i) {
+	int n = sem_wait(sem);
+	if (n != 0) perror("sem_wait failed");
+	printf ("  Proceso#%d entro a la region critica\n", i);
   sleep (1);
 }
 
 void up(Semaforo *sem)	{
 	int n = sem_post(sem);
 	if (n != 0) perror("sem_post failed");
+}
+
+void upMutex(Semaforo *sem, int i)	{
+	int n = sem_post(sem);
+	if (n != 0) perror("sem_post failed");
+	printf("  Proceso#%d salio de la region critica\n", i);
+}
+
+void BicisRight(char direccion, int *tiempo1, int tiempo2, int proceso, char *last) {
+	if ((*tiempo1 == tiempo2) && (*last == 'R') && (proceso == 0)) {
+		*last = 'R';
+		//*tiempo1 = *tiempo1 + 1;
+		printf("\n  Proceso#%i  %i %c\n\n", proceso, *tiempo1, direccion);
+	} else if ((direccion == 'R') && (proceso == 0)) {
+		printf("\n  Proceso#%i  %i %c\n\n", proceso, *tiempo1, direccion);
+		*last = 'R';
+	}
+	//printf("Proceso %i. last: %c\n", proceso, *last);
+}
+
+void BicisLeft(char direccion, int *tiempo1, int tiempo2, int proceso, char *last) {
+	if ((*tiempo1 == tiempo2) && (*last == 'L') && (proceso == 1)) {
+		*last = 'L';
+		*tiempo1 = *tiempo1 + 1;
+		printf("\n  Proceso#%i  %i %c\n\n", proceso, *tiempo1, direccion);
+	} else if ((direccion == 'L') && (proceso == 1)) {
+		printf("\n  Proceso#%i  %i %c\n\n", proceso, *tiempo1, direccion);
+		*last = 'L';
+	}
+	//printf("Proceso: %i. last: %c\n", proceso, *last);
 }
 
 int leeArchivo(FILE *A, int *tiempo, char *direccion){
@@ -34,8 +71,7 @@ int leeArchivo(FILE *A, int *tiempo, char *direccion){
   else{
     while(!feof(A)){
       fscanf(A,"%i %c", &tiempo[i], &direccion[i]);
-        //printf("i: %d, Request: %i %c\n", i, tiempo[i], direccion[i]);
-        i++;
+      i++;
     }
   }
   return i-1;
@@ -59,19 +95,15 @@ void ordenar(int *tiempo, char *direccion, int cantidadDeLineas) {
 	}
 }
 
-void BisicRight(int tiempo, char direccion) {
-	printf("  %i %c", tiempo, direccion);
-}
-
 int main (int argc, char **argv){
-    int i;                        /*      loop variables          */
+    int i;                        
     key_t llave;                 /*      shared memory key       */
     int shmid;                    /*      shared memory id        */
     Semaforo *derecha;            /*      synch semaphore         *//*shared */
 		Semaforo *izquierda;
 		Semaforo *mutex;
     pid_t pid;                    /*      fork pid                */
-    // int *p;                       /*      shared variable         *//*shared */
+    char *last;                       /*      shared variable         *//*shared */
 		FILE *entrada = NULL;
 		int tiempo[100];
 		char direccion[100];
@@ -79,6 +111,7 @@ int main (int argc, char **argv){
 		int lineas = leeArchivo(NULL, tiempo, direccion);
 		printf("Cantidad de Lineas: %d\n", lineas);
 		ordenar(tiempo, direccion, lineas);
+		//char last = direccion[0];
 
     /* initialize a shared variable in shared memory */
     llave = ftok ("/dev/null", 5);       /* valid directory name and a number */
@@ -89,9 +122,9 @@ int main (int argc, char **argv){
         exit (1);
     }		
 		
-    // p = (int *) shmat (shmid, NULL, 0);   /* attach p to shared memory */
-    // *p = 0;
-    // printf ("p=%d is allocated in shared memory.\n\n", *p);
+    last = (char *) shmat (shmid, NULL, 0);   /* attach p to shared memory */
+    *last = direccion[0];
+    printf ("p=%d is allocated in shared memory.\n\n", *last);
 
     /********************************************************/
 
@@ -138,8 +171,8 @@ int main (int argc, char **argv){
         printf ("\nParent: All children have exited.\n");
 
         /* shared memory detach */
-        //shmdt (p);
-        //shmctl (shmid, IPC_RMID, 0);
+        shmdt (last);
+        shmctl (shmid, IPC_RMID, 0);
 
         /* cleanup semaphores */
         sem_unlink ("derecha");   
@@ -157,24 +190,27 @@ int main (int argc, char **argv){
     /******************   CHILD PROCESS   *****************/
     /******************************************************/
     else{
-				char last = direccion[0];
-				for (int j = 0; j < lineas; j++) {
-					if ((direccion[j] == 'R') && (last == 'R')) {
-        		down(derecha, i);           /* P operation */
-						down(mutex, i);
-						BisicRight(tiempo[j], direccion[j]);
-        		up(mutex);
-        		up(derecha);           /* V operation */
-						last = 'R';
-					} else {
-						down(izquierda, i);           /* P operation */
-						down(mutex, i);
-						BisicRight(tiempo[j], direccion[j]);
-        		up(mutex);
-        		up(derecha);           /* V operation */
-						last = 'L';
-					}
-				}
+    	for (int j = 0; j < lineas; j++) {
+    		if (i == 0) {
+    			//printf("Entrada Derecha 1\n");
+    			down(derecha, i);
+    			downMutex(mutex, i);
+    			//printf("Derecha 1 last antes: %c\n", *last);
+    			BicisRight(direccion[j], &tiempo[j+1], tiempo[j], i, last);
+    			//printf("Derecha 1 last despues: %c\n", *last);
+    			upMutex(mutex, i);
+    			up(derecha);
+    		} else {
+    			//printf("Entrada Izquierda 1\n");
+    			down(izquierda, i);
+    			downMutex(mutex, i);
+    			//printf("Izquierda 1 last antes: %c\n", *last);
+    			BicisLeft(direccion[j], &tiempo[j+1], tiempo[j], i, last);
+    			//printf("Izquierda 1 last despues: %c\n", *last);
+    			upMutex(mutex, i);
+    			up(izquierda);
+    		}
+    	}
         exit (0);
     }
 }
